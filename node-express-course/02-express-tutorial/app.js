@@ -1,32 +1,38 @@
 const express = require('express')
-const app = express();
+const app = express()
+let { people } = require('./data')
 
-const {products} = require('./data')
+// static assets
+app.use(express.static('./methods-public'))
+// parse form data
+app.use(express.urlencoded({extended:false}))
+// parse json
+app.use(express.json())
 
-app.get('/',(req,res)=>{
-    res.send('<h1>Home Page</h1><a href="/api/products">products</a>')
-})
-app.get('/api/products',(req, res)=>{
-    const newProducts = products.map((product)=>{
-        const {id,name,image} = product;
-        return {id,name,image}
-    })
-    res.json(newProducts)
+
+app.get('/api/people', (req, res)=> {
+    res.status(200).json({ success: true, data:people})
 })
 
-//route parameter
-app.get('/api/products/:productID',(req, res)=>{
-   
-    //const singleProduct = products.find((product)=> product.id === 1) //sin route parameter
-   
-    const {productID} = req.params;
-    const singleProduct = products.find((product)=> product.id === Number(productID)) //con route parameter, hay q parsear el input si en el json es entero
-   
-   if(!singleProduct){
-    res.status(404).send('Product does not exist.');
-   }
-   res.json(singleProduct)
+
+
+app.post('/login',(req,res)=>{
+    const {name} = req.body;
+
+    if(name){
+        return res.status(200).send(`Welcome ${name}`)
+    }
+    res.status(401).send('Please Provide Credentials') 
 })
-app.listen(5000,()=>{
+
+app.post('/api/people',(req, res)=>{
+    const {name} = req.body
+    if (!name){
+        return res.status(400).json({success:false,msg:'please provide name value'})
+    }
+    res.status(201).json({success:true,person:name})
+})
+
+app.listen(5000, ()=>{
     console.log('Server is listening on port 5000...')
 })
